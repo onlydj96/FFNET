@@ -2,27 +2,10 @@ import onnxruntime as ort
 import numpy as np
 import cv2
 from PIL import Image
-import torchvision.transforms as transforms
 import time
 import requests
 import argparse
-
-def preprocess(image, fixed_size=(512, 512)):
-    transform = transforms.Compose([
-        transforms.Resize(fixed_size),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-    image = transform(image).unsqueeze(0).numpy()
-    return image
-
-def vis_onnx(session, image, fixed_size=(1024, 1024)):
-    image = preprocess(image, fixed_size)
-    inputs = {session.get_inputs()[0].name: image}
-    pred_map = session.run(None, inputs)[0]
-    
-    pred_map = pred_map.squeeze(0).squeeze(0)
-    return pred_map
+from utils import pred_heatmap
 
 def process_rtsp_stream(args):
     cap = cv2.VideoCapture(args.rtsp_url)
@@ -51,7 +34,7 @@ def process_rtsp_stream(args):
 
         image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         overlaying_time = time.time()
-        pred_map = vis_onnx(session, image)
+        pred_map = pred_heatmap(session, image)
         
         count = pred_map.sum()
 
