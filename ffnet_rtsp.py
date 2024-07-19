@@ -60,7 +60,7 @@ def process_rtsp_stream(args):
             continue
 
         # Send to FastAPI server
-        response = requests.post("http://0.0.0.0:5000/upload", files={"file": ("frame.jpg", buffer.tobytes(), "image/jpeg")})
+        response = requests.post(args.server_url, files={"file": ("frame.jpg", buffer.tobytes(), "image/jpeg")})
         print(response.status_code, response.reason) 
 
         print(f"Frame id : {frame_count} | Time : {round(time.time()-start, 3)}초")
@@ -71,6 +71,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--rtsp_url', default='rtsp://root:kiot!@34@192.168.20.101/axis-media/media.amp', type=str, help="RTSP URL of the stream to be processed.")
     parser.add_argument('--onnx_path', default='weights/density_estimation.onnx', type=str, help="the ONNX model path to be loaded")
+    parser.add_argument('--server_url', default='http://0.0.0.0:5000/upload', type=str, help="Server Url that send the data to")
     
     args = parser.parse_args()
     process_rtsp_stream(args)
